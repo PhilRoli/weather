@@ -71,6 +71,8 @@ final class StatusBarController {
         menu.addItem(.separator())
         appendRefreshItems(to: menu)
         menu.addItem(.separator())
+        menu.addItem(action("Preferences…", #selector(openPreferences), key: ","))
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         return menu
     }
