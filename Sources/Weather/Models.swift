@@ -1,5 +1,4 @@
 import Foundation
-import CoreLocation
 
 // MARK: - Temperature unit
 
@@ -182,7 +181,7 @@ func weatherDescription(_ code: Int) -> String {
 
 func windDirectionString(_ degrees: Double) -> String {
     let dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-    let idx = Int((degrees + 22.5) / 45.0) % 8
+    let idx = ((Int((degrees + 22.5) / 45.0) % 8) + 8) % 8
     return dirs[idx]
 }
 

@@ -19,6 +19,7 @@ final class ModelsTests: XCTestCase {
     // MARK: weatherDescription
 
     func testWeatherDescriptionClearSky()    { XCTAssertEqual(weatherDescription(0),  "Clear sky") }
+    func testWeatherDescriptionMainlyClear() { XCTAssertEqual(weatherDescription(1), "Mainly clear") }
     func testWeatherDescriptionPartly()      { XCTAssertEqual(weatherDescription(2),  "Partly cloudy") }
     func testWeatherDescriptionOvercast()    { XCTAssertEqual(weatherDescription(3),  "Overcast") }
     func testWeatherDescriptionFoggy()       { XCTAssertEqual(weatherDescription(45), "Foggy") }
