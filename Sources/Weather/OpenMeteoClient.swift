@@ -30,6 +30,7 @@ final class OpenMeteoClient: OpenMeteoClientProtocol {
             URLQueryItem(name: "hourly",            value: "temperature_2m,precipitation_probability,weather_code"),
             URLQueryItem(name: "daily",             value: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max"),
             URLQueryItem(name: "timezone",          value: "auto"),
+            URLQueryItem(name: "timeformat",        value: "unixtime"),
             URLQueryItem(name: "temperature_unit",  value: unit.rawValue),
             URLQueryItem(name: "wind_speed_unit",   value: "kmh"),
             URLQueryItem(name: "precipitation_unit", value: "mm"),
@@ -66,14 +67,13 @@ final class OpenMeteoClient: OpenMeteoClientProtocol {
             windDirection: resp.current.windDirection10m
         )
 
-        let hourlyFmt = makeDateFormatter(format: "yyyy-MM-dd'T'HH:mm")
         let hourlyTimes = resp.hourly.time
         let hourlyTemps = resp.hourly.temperature2m
         let hourlyProbs = resp.hourly.precipitationProbability
         let hourlyCodes = resp.hourly.weatherCode
         let minHourlyCount = min(hourlyTimes.count, hourlyTemps.count, hourlyProbs.count, hourlyCodes.count)
         let hourly: [HourlyForecast] = (0..<minHourlyCount).compactMap { i in
-            guard let date = hourlyFmt.date(from: hourlyTimes[i]) else { return nil }
+            let date = Date(timeIntervalSince1970: hourlyTimes[i])
             return HourlyForecast(
                 time: date,
                 temperature: hourlyTemps[i],
@@ -82,7 +82,6 @@ final class OpenMeteoClient: OpenMeteoClientProtocol {
             )
         }
 
-        let dailyFmt = makeDateFormatter(format: "yyyy-MM-dd")
         let dailyTimes = resp.daily.time
         let dailyCodes = resp.daily.weatherCode
         let dailyTMax = resp.daily.temperature2mMax
@@ -93,7 +92,7 @@ final class OpenMeteoClient: OpenMeteoClientProtocol {
         let minDailyCount = min(dailyTimes.count, dailyCodes.count, dailyTMax.count, dailyTMin.count,
                                 dailyPrecipSum.count, dailyPrecipProb.count, dailyWind.count)
         let daily: [DailyForecast] = (0..<minDailyCount).compactMap { i in
-            guard let date = dailyFmt.date(from: dailyTimes[i]) else { return nil }
+            let date = Date(timeIntervalSince1970: dailyTimes[i])
             return DailyForecast(
                 date: date, weatherCode: dailyCodes[i],
                 tempMax: dailyTMax[i], tempMin: dailyTMin[i],
@@ -118,14 +117,6 @@ final class OpenMeteoClient: OpenMeteoClientProtocol {
             }
             return GeocodingResult(name: name, latitude: r.latitude, longitude: r.longitude)
         }
-    }
-
-    private static func makeDateFormatter(format: String) -> DateFormatter {
-        let f = DateFormatter()
-        f.dateFormat = format
-        f.locale = Locale(identifier: "en_US_POSIX")
-        f.timeZone = TimeZone.current
-        return f
     }
 
     // MARK: - Network calls

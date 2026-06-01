@@ -220,9 +220,11 @@ final class PreferencesWindowController: NSWindowController {
         config.temperatureUnit  = pendingUnit
 
         if !pendingAutoLocation {
-            config.location   = pendingLocation
-            config.latitude   = pendingLatitude
-            config.longitude  = pendingLongitude
+            if pendingLatitude != nil && pendingLongitude != nil {
+                config.location   = pendingLocation
+                config.latitude   = pendingLatitude
+                config.longitude  = pendingLongitude
+            }
 
             // Auto-add manual location to favorites
             if let name = pendingLocation, let lat = pendingLatitude, let lon = pendingLongitude {

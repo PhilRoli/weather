@@ -232,6 +232,7 @@ final class StatusBarController {
             prefsController = PreferencesWindowController()
             prefsController?.onClose = { [weak self] in
                 self?.prefsController = nil
+                self?.fetcher.invalidateCache()
                 Task { await self?.refresh() }
             }
         }

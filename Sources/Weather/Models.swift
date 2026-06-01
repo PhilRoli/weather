@@ -87,7 +87,7 @@ struct APICurrentWeather: Codable {
 }
 
 struct APIHourlyData: Codable {
-    let time: [String]
+    let time: [Double]
     let temperature2m: [Double]
     let precipitationProbability: [Int]
     let weatherCode: [Int]
@@ -101,7 +101,7 @@ struct APIHourlyData: Codable {
 }
 
 struct APIDailyData: Codable {
-    let time: [String]
+    let time: [Double]
     let weatherCode: [Int]
     let temperature2mMax: [Double]
     let temperature2mMin: [Double]

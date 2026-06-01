@@ -77,7 +77,7 @@ final class OpenMeteoClientTests: XCTestCase {
         resp = APIForecastResponse(
             current: resp.current,
             hourly: APIHourlyData(
-                time: ["2024-01-01T12:00", "2024-01-01T13:00"],
+                time: [1704110400.0, 1704114000.0],
                 temperature2m: [14.5],
                 precipitationProbability: [10, 20],
                 weatherCode: [2, 3]
@@ -122,13 +122,13 @@ final class OpenMeteoClientTests: XCTestCase {
             "weather_code": 2, "wind_speed_10m": 18.5, "wind_direction_10m": 270.0
           },
           "hourly": {
-            "time": ["2024-01-01T12:00"],
+            "time": [1704110400.0],
             "temperature_2m": [14.5],
             "precipitation_probability": [10],
             "weather_code": [2]
           },
           "daily": {
-            "time": ["2024-01-01"],
+            "time": [1704067200.0],
             "weather_code": [2],
             "temperature_2m_max": [16.0],
             "temperature_2m_min": [8.0],
@@ -155,13 +155,13 @@ final class OpenMeteoClientTests: XCTestCase {
                 weatherCode: 2, windSpeed10m: 18.5, windDirection10m: 270.0
             ),
             hourly: APIHourlyData(
-                time: ["2024-01-01T12:00", "2024-01-01T13:00"],
+                time: [1704110400.0, 1704114000.0],
                 temperature2m: [14.5, 15.0],
                 precipitationProbability: [10, 20],
                 weatherCode: [2, 3]
             ),
             daily: APIDailyData(
-                time: ["2024-01-01", "2024-01-02"],
+                time: [1704067200.0, 1704153600.0],
                 weatherCode: [2, 3],
                 temperature2mMax: [16.0, 18.0],
                 temperature2mMin: [8.0, 10.0],

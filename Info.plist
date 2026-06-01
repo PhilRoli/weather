@@ -16,5 +16,7 @@
     <string>Weather needs your location to show local conditions.</string>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
+    <key>CFBundleExecutable</key>
+    <string>Weather</string>
 </dict>
 </plist>
