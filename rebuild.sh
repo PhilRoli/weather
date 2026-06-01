@@ -1,23 +1,27 @@
 #!/bin/bash
 set -e
 
-APP_NAME="Weather"
-BUNDLE="$APP_NAME.app"
-BINARY_NAME="Weather"
-BUILD_DIR=".build/release"
+REPO="$(cd "$(dirname "$0")" && pwd)"
+APP="/Applications/Weather.app"
+BINARY="$APP/Contents/MacOS/Weather"
 
 echo "▶ Building..."
-swift build -c release
+swift build -c release --package-path "$REPO"
 
-echo "▶ Creating bundle..."
-rm -rf "$BUNDLE"
-mkdir -p "$BUNDLE/Contents/MacOS"
+echo "▶ Stopping running instance..."
+pkill -x Weather 2>/dev/null || true
+sleep 0.5
 
-cp "$BUILD_DIR/$BINARY_NAME" "$BUNDLE/Contents/MacOS/$BINARY_NAME"
-cp Info.plist "$BUNDLE/Contents/Info.plist"
+echo "▶ Installing..."
+mkdir -p "$APP/Contents/MacOS"
+cp "$REPO/.build/release/Weather" "$BINARY"
+cp "$REPO/Info.plist" "$APP/Contents/Info.plist"
 
-echo "▶ Signing..."
-codesign --force --sign - "$BUNDLE"
+echo "▶ Re-signing..."
+codesign --remove-signature "$APP"
+codesign -s - "$APP"
 
-echo "✅ $BUNDLE ready"
-echo "   To install: cp -r $BUNDLE /Applications/"
+echo "▶ Launching..."
+open "$APP"
+
+echo "✅ Done."
