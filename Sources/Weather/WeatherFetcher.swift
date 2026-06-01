@@ -80,7 +80,7 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
             case .denied, .restricted:
                 continuation.resume(throwing: CLError(.denied))
                 return
-            case .authorizedWhenInUse, .authorized:
+            case .authorizedWhenInUse, .authorizedAlways, .authorized:
                 locationContinuation = continuation
                 locationManager.requestLocation()
             case .notDetermined:
@@ -123,7 +123,7 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
             case .denied, .restricted:
                 self.locationContinuation?.resume(throwing: CLError(.denied))
                 self.locationContinuation = nil
-            case .authorizedWhenInUse, .authorized:
+            case .authorizedWhenInUse, .authorizedAlways, .authorized:
                 if self.locationContinuation != nil {
                     manager.requestLocation()
                 }
