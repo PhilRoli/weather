@@ -7,6 +7,7 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     private var cachedResult: (WeatherData, Date)?
     private var locationContinuation: CheckedContinuation<CLLocation, Error>?
+    private var awaitingAuthorizationDecision = false
 
     private static let cacheTTL: TimeInterval = 300  // 5 minutes
     private static let coordTolerance: Double = 0.01 // ~1 km
@@ -34,7 +35,19 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
             } catch let error as CLError where error.code == .denied {
                 return .locationDenied
             } catch {
-                return .noConnection
+                // CoreLocation can fail transiently (e.g. no Wi-Fi scan available).
+                // Fall back to the last known fix rather than reporting no connection.
+                if let (cached, _) = cachedResult {
+                    lat = cached.latitude
+                    lon = cached.longitude
+                    locationName = cached.location
+                } else if let configLat = config.latitude, let configLon = config.longitude {
+                    lat = configLat
+                    lon = configLon
+                    locationName = config.location ?? String(format: "%.4f, %.4f", lat, lon)
+                } else {
+                    return .noConnection
+                }
             }
         } else {
             guard let configLat = config.latitude, let configLon = config.longitude else {
@@ -81,12 +94,15 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
                 continuation.resume(throwing: CLError(.denied))
                 return
             case .authorizedWhenInUse, .authorizedAlways, .authorized:
+                awaitingAuthorizationDecision = false
                 locationContinuation = continuation
                 locationManager.requestLocation()
             case .notDetermined:
+                awaitingAuthorizationDecision = true
                 locationContinuation = continuation
                 locationManager.requestWhenInUseAuthorization()
             @unknown default:
+                awaitingAuthorizationDecision = true
                 locationContinuation = continuation
                 locationManager.requestWhenInUseAuthorization()
             }
@@ -124,7 +140,8 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
                 self.locationContinuation?.resume(throwing: CLError(.denied))
                 self.locationContinuation = nil
             case .authorizedWhenInUse, .authorizedAlways, .authorized:
-                if self.locationContinuation != nil {
+                if self.locationContinuation != nil && self.awaitingAuthorizationDecision {
+                    self.awaitingAuthorizationDecision = false
                     manager.requestLocation()
                 }
             default:
