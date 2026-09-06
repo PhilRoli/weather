@@ -4,7 +4,7 @@ import CoreLocation
 @MainActor
 final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
     private let client: any OpenMeteoClientProtocol
-    private let locationManager = CLLocationManager()
+    private var locationManager = CLLocationManager()
     private var cachedResult: (WeatherData, Date)?
     private var locationContinuation: CheckedContinuation<CLLocation, Error>?
     private var awaitingAuthorizationDecision = false
@@ -15,6 +15,11 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
     init(client: any OpenMeteoClientProtocol = OpenMeteoClient()) {
         self.client = client
         super.init()
+        configureLocationManager()
+    }
+
+    private func configureLocationManager() {
+        locationManager = CLLocationManager()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyThreeKilometers
     }
@@ -36,6 +41,9 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
                 return .locationDenied
             } catch {
                 // CoreLocation can fail transiently (e.g. no Wi-Fi scan available).
+                // A stuck CLLocationManager has been observed to keep failing indefinitely
+                // until recreated, so start fresh for the next attempt.
+                configureLocationManager()
                 // Fall back to the last known fix rather than reporting no connection.
                 if let (cached, _) = cachedResult {
                     lat = cached.latitude
