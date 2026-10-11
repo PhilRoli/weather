@@ -1,5 +1,6 @@
 // Sources/Weather/PreferencesWindowController.swift
 import AppKit
+import MenuBarKit
 
 @MainActor
 final class PreferencesWindowController: NSWindowController {
@@ -138,6 +139,10 @@ final class PreferencesWindowController: NSWindowController {
         cv.addSubview(fahrenheitRadio)
 
         // Save & Close
+        let versionLabel = PreferencesLayout.versionLabel()
+        versionLabel.frame = NSRect(x: 16, y: 10, width: 240, height: 16)
+        cv.addSubview(versionLabel)
+
         let saveBtn = NSButton(title: "Save & Close", target: self, action: #selector(saveAndClose))
         saveBtn.bezelStyle = .rounded
         saveBtn.frame = NSRect(x: 264, y: 4, width: 100, height: 28)

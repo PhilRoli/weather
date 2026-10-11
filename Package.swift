@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "Weather",
     platforms: [.macOS(.v13)],
-    dependencies: [.package(url: "https://github.com/PhilRoli/menubar-kit", from: "1.1.0")],
+    dependencies: [.package(url: "https://github.com/PhilRoli/menubar-kit", from: "1.3.0")],
     targets: [
         .executableTarget(
             name: "Weather",
