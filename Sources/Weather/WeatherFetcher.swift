@@ -76,7 +76,9 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
 
         // Fetch from API
         do {
-            let data = try await client.fetchForecast(lat: lat, lon: lon, unit: config.temperatureUnit, location: locationName)
+            let data = try await client.fetchForecast(
+                lat: lat, lon: lon, unit: config.temperatureUnit, location: locationName
+            )
             cachedResult = (data, Date())
             return .data(data)
         } catch {
