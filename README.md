@@ -1,4 +1,4 @@
-# Weather
+# <img src="Packaging/icon.png" width="48" height="48" align="absmiddle" alt="Weather icon"> Weather
 
 Menu bar app that shows the current temperature with a weather emoji. Click it for conditions, the next 24 hours and a 7-day forecast, powered by [Open-Meteo](https://open-meteo.com) (no API key).
 
