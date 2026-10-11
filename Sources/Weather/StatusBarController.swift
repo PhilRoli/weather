@@ -1,5 +1,6 @@
 // Sources/Weather/StatusBarController.swift
 import AppKit
+import MenuBarKit
 
 @MainActor
 final class StatusBarController {
@@ -70,13 +71,9 @@ final class StatusBarController {
         menu.addItem(.separator())
         var currentData: WeatherData?
         if case .data(let d) = result { currentData = d }
-        appendSettingsSubmenu(to: menu, config: config, data: currentData)
-        menu.addItem(.separator())
-        appendRefreshItems(to: menu)
-        menu.addItem(.separator())
-        menu.addItem(action("Preferences…", #selector(openPreferences), key: ","))
-        menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        for item in Self.footerItems(config: config, data: currentData, updatedAt: Date(), target: self) {
+            menu.addItem(item)
+        }
         return menu
     }
 
@@ -123,36 +120,53 @@ final class StatusBarController {
         }
     }
 
-    private func appendSettingsSubmenu(to menu: NSMenu, config: AppConfig, data: WeatherData?) {
-        let settings = NSMenuItem(title: "⚙️ Settings", action: nil, keyEquivalent: "")
+    /// Refresh, Settings, Preferences and Quit. Static so the menu structure can be tested without a controller.
+    static func footerItems(config: AppConfig, data: WeatherData?, updatedAt: Date, target: AnyObject) -> [NSMenuItem] {
+        let time = DateFormatter.localizedString(from: updatedAt, dateStyle: .none, timeStyle: .medium)
+        let updated = NSMenuItem(title: "Updated \(time)", action: nil, keyEquivalent: "")
+        updated.isEnabled = false
+        return [
+            updated,
+            .item("Refresh Now", action: #selector(StatusBarController.manualRefresh), key: "r", target: target),
+            settingsItem(config: config, data: data, target: target),
+            .item("Preferences…", action: #selector(StatusBarController.openPreferences), key: ",", target: target),
+            NSMenuItem(title: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        ]
+    }
+
+    private static func settingsItem(config: AppConfig, data: WeatherData?, target: AnyObject) -> NSMenuItem {
+        let settings = NSMenuItem(title: "Settings", action: nil, keyEquivalent: "")
         let sub = NSMenu()
 
         let unitLabel = config.temperatureUnit == .fahrenheit ? "Temperature: Fahrenheit" : "Temperature: Celsius"
-        sub.addItem(action(unitLabel, #selector(toggleUnit)))
+        sub.addItem(.item(unitLabel, action: #selector(StatusBarController.toggleUnit), target: target))
 
-        let locLabel = config.useAutoLocation ? "Location: 🎯 Automatic" : "Location: Manual"
-        sub.addItem(action(locLabel, #selector(toggleAutoLocation)))
+        let locLabel = config.useAutoLocation ? "Location: Automatic" : "Location: Manual"
+        sub.addItem(.item(locLabel, action: #selector(StatusBarController.toggleAutoLocation), target: target))
 
         if let data = data {
             let isFav = config.favorites.contains {
                 abs($0.latitude - data.latitude) < 0.001 && abs($0.longitude - data.longitude) < 0.001
             }
             if isFav {
-                sub.addItem(action("⭐ Remove from Favorites", #selector(removeFavorite)))
+                sub.addItem(.item("Remove from Favorites", action: #selector(StatusBarController.removeFavorite),
+                                  target: target))
             } else {
-                sub.addItem(action("⭐ Add to Favorites", #selector(addFavorite)))
+                sub.addItem(.item("Add to Favorites", action: #selector(StatusBarController.addFavorite),
+                                  target: target))
             }
         }
 
         if !config.favorites.isEmpty {
-            let favsItem = NSMenuItem(title: "📍 Favorite Locations", action: nil, keyEquivalent: "")
+            let favsItem = NSMenuItem(title: "Favorite Locations", action: nil, keyEquivalent: "")
             let favsSub = NSMenu()
             for fav in config.favorites {
                 let isCurrent = data.map {
                     abs($0.latitude - fav.latitude) < 0.001 && abs($0.longitude - fav.longitude) < 0.001
                 } ?? false
                 let label = isCurrent ? "✓ \(fav.name)" : fav.name
-                let item = action(label, #selector(setFavoriteLocation(_:)))
+                let item = NSMenuItem.item(label, action: #selector(StatusBarController.setFavoriteLocation(_:)),
+                                           target: target)
                 item.representedObject = fav
                 favsSub.addItem(item)
             }
@@ -161,17 +175,7 @@ final class StatusBarController {
         }
 
         settings.submenu = sub
-        menu.addItem(settings)
-    }
-
-    private func appendRefreshItems(to menu: NSMenu) {
-        let refreshItem = NSMenuItem(title: "🔄 Refresh", action: nil, keyEquivalent: "")
-        let refreshSub = NSMenu()
-        let now = DateFormatter.localizedString(from: Date(), dateStyle: .none, timeStyle: .medium)
-        refreshSub.addItem(disabled("Last updated: \(now)"))
-        refreshItem.submenu = refreshSub
-        menu.addItem(refreshItem)
-        menu.addItem(action("🔄 Refresh Now", #selector(manualRefresh), key: "r"))
+        return settings
     }
 
     // MARK: - Menu helpers
