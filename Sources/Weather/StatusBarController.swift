@@ -43,7 +43,8 @@ final class StatusBarController {
     nonisolated static func titleString(for result: WeatherResult, unit: TemperatureUnit) -> String {
         switch result {
         case .data(let data):
-            return "\(weatherEmoji(data.current.weatherCode)) \(formatTemperature(data.current.temperature, unit: unit))"
+            let emoji = weatherEmoji(data.current.weatherCode)
+            return "\(emoji) \(formatTemperature(data.current.temperature, unit: unit))"
         case .noConnection:
             return "❌ No Connection"
         case .noLocation, .locationDenied:
@@ -67,7 +68,9 @@ final class StatusBarController {
             buildWeatherItems(data, config: config, into: menu)
         }
         menu.addItem(.separator())
-        appendSettingsSubmenu(to: menu, config: config, data: { if case .data(let d) = result { return d } else { return nil } }())
+        var currentData: WeatherData?
+        if case .data(let d) = result { currentData = d }
+        appendSettingsSubmenu(to: menu, config: config, data: currentData)
         menu.addItem(.separator())
         appendRefreshItems(to: menu)
         menu.addItem(.separator())
@@ -79,10 +82,14 @@ final class StatusBarController {
 
     private func buildWeatherItems(_ data: WeatherData, config: AppConfig, into menu: NSMenu) {
         menu.addItem(disabled("📍 \(data.location)"))
-        menu.addItem(disabled("🌡️ \(formatTemperature(data.current.temperature, unit: config.temperatureUnit)) (feels like \(formatTemperature(data.current.apparentTemperature, unit: config.temperatureUnit)))"))
-        menu.addItem(disabled("☁️ \(weatherEmoji(data.current.weatherCode)) \(weatherDescription(data.current.weatherCode))"))
+        let temp = formatTemperature(data.current.temperature, unit: config.temperatureUnit)
+        let feelsLike = formatTemperature(data.current.apparentTemperature, unit: config.temperatureUnit)
+        menu.addItem(disabled("🌡️ \(temp) (feels like \(feelsLike))"))
+        let code = data.current.weatherCode
+        menu.addItem(disabled("☁️ \(weatherEmoji(code)) \(weatherDescription(code))"))
         menu.addItem(disabled("💧 Humidity: \(data.current.humidity)%"))
-        menu.addItem(disabled("💨 Wind: \(Int(data.current.windSpeed)) km/h \(windDirectionString(data.current.windDirection))"))
+        let windDirection = windDirectionString(data.current.windDirection)
+        menu.addItem(disabled("💨 Wind: \(Int(data.current.windSpeed)) km/h \(windDirection)"))
         if data.current.precipitation > 0 {
             menu.addItem(disabled(String(format: "🌧️ Precipitation: %.1f mm", data.current.precipitation)))
         }
@@ -111,7 +118,8 @@ final class StatusBarController {
             let precip = day.precipitationSum > 0
                 ? String(format: " 💧%.1fmm (%d%%)", day.precipitationSum, day.precipitationProbabilityMax)
                 : ""
-            menu.addItem(disabled("\(label): \(weatherEmoji(day.weatherCode)) \(tMin) – \(tMax)\(precip) 💨\(Int(day.windSpeedMax))km/h"))
+            let emoji = weatherEmoji(day.weatherCode)
+            menu.addItem(disabled("\(label): \(emoji) \(tMin) – \(tMax)\(precip) 💨\(Int(day.windSpeedMax))km/h"))
         }
     }
 
@@ -126,7 +134,9 @@ final class StatusBarController {
         sub.addItem(action(locLabel, #selector(toggleAutoLocation)))
 
         if let data = data {
-            let isFav = config.favorites.contains { abs($0.latitude - data.latitude) < 0.001 && abs($0.longitude - data.longitude) < 0.001 }
+            let isFav = config.favorites.contains {
+                abs($0.latitude - data.latitude) < 0.001 && abs($0.longitude - data.longitude) < 0.001
+            }
             if isFav {
                 sub.addItem(action("⭐ Remove from Favorites", #selector(removeFavorite)))
             } else {
@@ -138,7 +148,9 @@ final class StatusBarController {
             let favsItem = NSMenuItem(title: "📍 Favorite Locations", action: nil, keyEquivalent: "")
             let favsSub = NSMenu()
             for fav in config.favorites {
-                let isCurrent = data.map { abs($0.latitude - fav.latitude) < 0.001 && abs($0.longitude - fav.longitude) < 0.001 } ?? false
+                let isCurrent = data.map {
+                    abs($0.latitude - fav.latitude) < 0.001 && abs($0.longitude - fav.longitude) < 0.001
+                } ?? false
                 let label = isCurrent ? "✓ \(fav.name)" : fav.name
                 let item = action(label, #selector(setFavoriteLocation(_:)))
                 item.representedObject = fav
@@ -200,7 +212,9 @@ final class StatusBarController {
             abs($0.latitude - data.latitude) < 0.001 && abs($0.longitude - data.longitude) < 0.001
         }
         guard !alreadyExists else { return }
-        config.favorites.append(FavoriteLocation(name: data.location, latitude: data.latitude, longitude: data.longitude))
+        config.favorites.append(
+            FavoriteLocation(name: data.location, latitude: data.latitude, longitude: data.longitude)
+        )
         AppConfigStore.shared.save(config)
         Task { await refresh() }
     }

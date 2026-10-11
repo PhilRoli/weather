@@ -50,6 +50,7 @@ final class PreferencesWindowController: NSWindowController {
         favorites           = config.favorites
     }
 
+    // swiftlint:disable:next function_body_length
     private func setupUI() {
         guard let cv = window?.contentView else { return }
 
@@ -113,7 +114,9 @@ final class PreferencesWindowController: NSWindowController {
         cv.addSubview(favScroll)
 
         // Auto-location checkbox
-        autoLocationCheckbox = NSButton(checkboxWithTitle: "Use automatic location", target: self, action: #selector(autoLocationChanged))
+        autoLocationCheckbox = NSButton(
+            checkboxWithTitle: "Use automatic location", target: self, action: #selector(autoLocationChanged)
+        )
         autoLocationCheckbox.state = pendingAutoLocation ? .on : .off
         autoLocationCheckbox.frame = NSRect(x: 16, y: 60, width: 220, height: 20)
         cv.addSubview(autoLocationCheckbox)
@@ -228,7 +231,9 @@ final class PreferencesWindowController: NSWindowController {
 
             // Auto-add manual location to favorites
             if let name = pendingLocation, let lat = pendingLatitude, let lon = pendingLongitude {
-                let alreadyExists = favorites.contains { abs($0.latitude - lat) < 0.001 && abs($0.longitude - lon) < 0.001 }
+                let alreadyExists = favorites.contains {
+                    abs($0.latitude - lat) < 0.001 && abs($0.longitude - lon) < 0.001
+                }
                 if !alreadyExists {
                     favorites.append(FavoriteLocation(name: name, latitude: lat, longitude: lon))
                 }

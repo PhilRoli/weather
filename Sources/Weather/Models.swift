@@ -134,6 +134,7 @@ struct APIGeocodingResult: Codable {
 
 // MARK: - Pure helper functions
 
+// swiftlint:disable:next cyclomatic_complexity
 func weatherEmoji(_ code: Int) -> String {
     switch code {
     case 0:           return "☀️"
@@ -154,6 +155,7 @@ func weatherEmoji(_ code: Int) -> String {
     }
 }
 
+// swiftlint:disable:next cyclomatic_complexity
 func weatherDescription(_ code: Int) -> String {
     switch code {
     case 0:       return "Clear sky"

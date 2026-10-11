@@ -92,7 +92,9 @@ final class OpenMeteoClientTests: XCTestCase {
 
     func testProcessGeocodingBuildsDisplayName() {
         let results = OpenMeteoClient.processGeocoding(APIGeocodingResponse(results: [
-            APIGeocodingResult(name: "Vienna", latitude: 48.2082, longitude: 16.3738, country: "Austria", admin1: "Vienna")
+            APIGeocodingResult(
+                name: "Vienna", latitude: 48.2082, longitude: 16.3738, country: "Austria", admin1: "Vienna"
+            )
         ]))
         XCTAssertEqual(results.count, 1)
         XCTAssertEqual(results[0].name, "Vienna, Vienna, Austria")
