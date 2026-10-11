@@ -1,6 +1,7 @@
 // Sources/Weather/PreferencesWindowController.swift
 import AppKit
 import MenuBarKit
+import ServiceManagement
 
 @MainActor
 final class PreferencesWindowController: NSWindowController {
@@ -12,6 +13,8 @@ final class PreferencesWindowController: NSWindowController {
     private var favoritesTable: NSTableView!
     private var deleteFavButton: NSButton!
     private var autoLocationCheckbox: NSButton!
+    private var loginCheckbox: NSButton!
+    private let loginItemController = LoginItemController()
     private var celsiusRadio: NSButton!
     private var fahrenheitRadio: NSButton!
 
@@ -123,6 +126,12 @@ final class PreferencesWindowController: NSWindowController {
         cv.addSubview(autoLocationCheckbox)
         locationField.isEnabled = !pendingAutoLocation
 
+        // Launch at login (applies immediately)
+        loginCheckbox = NSButton(checkboxWithTitle: "Launch at login", target: self, action: #selector(loginChanged))
+        loginCheckbox.state = loginItemController.isEnabled ? .on : .off
+        loginCheckbox.frame = NSRect(x: 244, y: 60, width: 120, height: 20)
+        cv.addSubview(loginCheckbox)
+
         // Temperature unit
         let unitLabel = label("Temperature:")
         unitLabel.frame = NSRect(x: 16, y: 32, width: 90, height: 20)
@@ -216,6 +225,31 @@ final class PreferencesWindowController: NSWindowController {
     @objc private func autoLocationChanged() {
         pendingAutoLocation = autoLocationCheckbox.state == .on
         locationField.isEnabled = !pendingAutoLocation
+    }
+
+    @objc private func loginChanged() {
+        let wantsEnabled = loginCheckbox.state == .on
+        if !loginItemController.setEnabled(wantsEnabled) {
+            showAlert(
+                title: "Couldn't update login item",
+                message: "macOS declined to \(wantsEnabled ? "register" : "unregister") Weather as a login item."
+            )
+        } else if wantsEnabled && loginItemController.requiresApproval {
+            showAlert(
+                title: "Approval needed",
+                message: "Allow Weather in System Settings → General → Login Items to finish enabling this."
+            )
+            SMAppService.openSystemSettingsLoginItems()
+        }
+        loginCheckbox.state = loginItemController.isEnabled ? .on : .off
+    }
+
+    private func showAlert(title: String, message: String) {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.alertStyle = .warning
+        alert.runModal()
     }
 
     @objc private func unitChanged(_ sender: NSButton) {
