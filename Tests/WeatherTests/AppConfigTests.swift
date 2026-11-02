@@ -49,14 +49,14 @@ final class AppConfigTests: XCTestCase {
     // MARK: AppConfigStore persistence
 
     func testStoreLoadReturnDefaultWhenEmpty() {
-        let store = AppConfigStore(suiteName: "test.\(UUID().uuidString)")
+        let store = AppConfigStore(defaults: UserDefaults(suiteName: "test.\(UUID().uuidString)")!)
         let cfg = store.load()
         XCTAssertNil(cfg.location)
         XCTAssertEqual(cfg.temperatureUnit, .celsius)
     }
 
     func testStoreSaveAndLoad() {
-        let store = AppConfigStore(suiteName: "test.\(UUID().uuidString)")
+        let store = AppConfigStore(defaults: UserDefaults(suiteName: "test.\(UUID().uuidString)")!)
         var cfg = AppConfig()
         cfg.location = "Berlin"
         cfg.latitude = 52.52
