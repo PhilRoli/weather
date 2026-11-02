@@ -32,6 +32,11 @@ final class StatusBarControllerTests: XCTestCase {
         XCTAssertEqual(title, "❌ No Connection")
     }
 
+    func testTitleServiceUnavailable() {
+        let title = StatusBarController.titleString(for: .serviceUnavailable, unit: .celsius)
+        XCTAssertEqual(title, "⚠️ Unavailable")
+    }
+
     func testTitleLocationDenied() {
         let title = StatusBarController.titleString(for: .locationDenied, unit: .celsius)
         XCTAssertEqual(title, "⛅ Weather")

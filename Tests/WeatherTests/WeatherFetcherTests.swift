@@ -105,6 +105,21 @@ final class WeatherFetcherTests: XCTestCase {
         guard case .noConnection = result else { XCTFail("Expected .noConnection, got \(result)"); return }
     }
 
+    func testHTTPErrorReturnsServiceUnavailable() async {
+        for code in [429, 503] {
+            let mock = MockOpenMeteoClient()
+            mock.fetchResult = .failure(OpenMeteoError.httpError(code))
+            let fetcher = WeatherFetcher(client: mock)
+            var config = AppConfig()
+            config.useAutoLocation = false
+            config.latitude = 48.2082
+            config.longitude = 16.3738
+
+            let result = await fetcher.fetch(config: config)
+            guard case .serviceUnavailable = result else { XCTFail("HTTP \(code): got \(result)"); return }
+        }
+    }
+
     func testCoordinateChangeBustsCache() async {
         let mock = MockOpenMeteoClient()
         let fetcher = WeatherFetcher(client: mock)

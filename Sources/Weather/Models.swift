@@ -13,6 +13,7 @@ enum WeatherResult {
     case data(WeatherData)
     case noLocation
     case noConnection
+    case serviceUnavailable
     case locationDenied
 }
 
