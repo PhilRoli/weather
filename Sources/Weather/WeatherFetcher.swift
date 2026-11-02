@@ -81,8 +81,12 @@ final class WeatherFetcher: NSObject, CLLocationManagerDelegate {
             )
             cachedResult = (data, Date())
             return .data(data)
-        } catch {
+        } catch is URLError {
             return .noConnection
+        } catch {
+            // HTTP errors (5xx, 429 rate limit) and undecodable responses: the network works,
+            // the service doesn't.
+            return .serviceUnavailable
         }
     }
 

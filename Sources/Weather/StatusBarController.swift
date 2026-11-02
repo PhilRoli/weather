@@ -48,6 +48,8 @@ final class StatusBarController {
             return "\(emoji) \(formatTemperature(data.current.temperature, unit: unit))"
         case .noConnection:
             return "❌ No Connection"
+        case .serviceUnavailable:
+            return "⚠️ Unavailable"
         case .noLocation, .locationDenied:
             return "⛅ Weather"
         }
@@ -65,6 +67,8 @@ final class StatusBarController {
             menu.addItem(disabled("ℹ️ Enable in: System Settings → Privacy → Location Services"))
         case .noConnection:
             menu.addItem(disabled("Unable to fetch weather — check your internet connection"))
+        case .serviceUnavailable:
+            menu.addItem(disabled("Weather service unavailable or rate limited — will retry automatically"))
         case .data(let data):
             buildWeatherItems(data, config: config, into: menu)
         }
